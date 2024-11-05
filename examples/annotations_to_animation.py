@@ -10,34 +10,38 @@ import yaml
 from pkg_resources import resource_filename
 
 
-def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str):
+def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str) -> str:
     """
     Given a path to a directory with character annotations, a motion configuration file, and a retarget configuration file,
-    creates an animation and saves it to {annotation_dir}/video.png
+    creates an animation and saves it to {annotation_dir}/video.gif, then returns the path to the saved file.
     """
-
-    # package character_cfg_fn, motion_cfg_fn, and retarget_cfg_fn
+    # Package configuration paths
     animated_drawing_dict = {
         'character_cfg': str(Path(char_anno_dir, 'char_cfg.yaml').resolve()),
         'motion_cfg': str(Path(motion_cfg_fn).resolve()),
         'retarget_cfg': str(Path(retarget_cfg_fn).resolve())
     }
 
-    # create mvc config
+    # MVC configuration
     mvc_cfg = {
-        'scene': {'ANIMATED_CHARACTERS': [animated_drawing_dict]},  # add the character to the scene
+        'scene': {'ANIMATED_CHARACTERS': [animated_drawing_dict]},
         'controller': {
-            'MODE': 'video_render',  # 'video_render' or 'interactive'
-            'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, 'video.gif').resolve())}  # set the output location
+            'MODE': 'video_render',
+            'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, 'video.gif').resolve())
+        }
     }
 
-    # write the new mvc config file out
+    # Save the MVC config to a YAML file
     output_mvc_cfn_fn = str(Path(char_anno_dir, 'mvc_cfg.yaml'))
     with open(output_mvc_cfn_fn, 'w') as f:
         yaml.dump(dict(mvc_cfg), f)
 
-    # render the video
+    # Render the animation
     animated_drawings.render.start(output_mvc_cfn_fn)
+
+    # Return the path to the output GIF
+    return mvc_cfg['controller']['OUTPUT_VIDEO_PATH']
+
 
 
 if __name__ == '__main__':
